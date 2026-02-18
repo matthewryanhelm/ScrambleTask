@@ -1,3 +1,9 @@
-https://matthewryanhelm.github.io/ScrambleTask/
+https://matthewryanhelm.github.io/ScrambleTask/index.html
 
 https://matthewryanhelm.github.io/anagram-task/index.html?cond=Easy
+
+https://matthewryanhelm.github.io/ScrambleTask/index.html?cond=Moderate
+
+https://matthewryanhelm.github.io/ScrambleTask/index.html?cond=Hard
+
+https://matthewryanhelm.github.io/ScrambleTask/index.html?cond=MixedFutility
