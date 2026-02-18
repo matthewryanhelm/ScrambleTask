@@ -1,17 +1,39 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Anagram Task Prototype</title>
+  <meta charset="UTF-8">
+  <title>Scramble Task</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
     }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
     h1 {
+      font-size: 1.4rem;
+      text-align: center;
       margin-bottom: 0.5rem;
+    }
+
+    #instructions {
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+
+    #scramble-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
     }
 
     #scramble {
@@ -19,85 +41,195 @@
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    #instructions {
-      margin-bottom: 1rem;
+
+    #timer {
+      margin-left: auto;
+      font-size: 0.9rem;
+      color: #555;
+      display: none; /* hides the timer from participants */
     }
 
     #board {
-      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
     }
+
     .attempt-row {
       display: flex;
-      gap: 0.4rem;
-      margin-bottom: 0.4rem;
+      justify-content: center;
+      gap: 0.25rem;
     }
+
     .letter-box {
-      width: 2.4rem;
-      height: 2.4rem;
-      border: 2px solid #888;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 2px solid #999;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
-      text-transform: uppercase;
+      background: white;
       box-sizing: border-box;
     }
+
+    .letter-box.readonly {
+      background: #e5e5e5;
+    }
+
     .letter-box input {
       width: 100%;
       height: 100%;
       border: none;
       text-align: center;
-      font-size: 1.4rem;
+      font-size: 1.7rem;
+      font-weight: bold;
       text-transform: uppercase;
+      background: transparent;
       outline: none;
-      background: none;
-    }
-    .letter-box.readonly {
-      background-color: #eee;
+      padding: 0;
+      margin: 0;
     }
 
     #message {
-      margin-top: 0.5rem;
-      color: #b00;
       min-height: 1.2rem;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: #b00;
+    }
+
+    #skipBtn {
+      display: none;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      border: 2px solid #b00;
+      color: b00;
+      background: #eee;
+      cursor: pointer;
+      font-weight: bold;
     }
 
     #controls {
-      margin-top: 1rem;
       display: flex;
-      gap: 0.5rem;
-      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
     }
-    button {
+
+    /* On-screen keyboard */
+    #keyboard {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+    }
+
+    .kb-row {
+      display: flex;
+      margin: 0.15rem 0;
+    }
+
+    #keyboard button {
+      min-width: 2.5rem;
+      min-height: 2.5rem;
+      padding: 0.4rem 0.3rem;
+      margin: 0 0.08rem;
       font-size: 1rem;
-      padding: 0.4rem 0.8rem;
+      font-weight: 600;
+      border-radius: 4px;
+      border: 1px solid #bbb;
+      background: #eee;
       cursor: pointer;
     }
-    #skipBtn {
-      display: none;  /* hidden until allowed */
+
+    #keyboard button[data-key="ENTER"],
+    #keyboard button[data-key="BACKSPACE"] {
+      min-width: 5rem;
+      font-size: 1rem;
     }
-    #timer {
-      margin-left: auto;
-      font-size: 0.9rem;
-      color: #555;
-      display: none;
+
+    #keyboard button:active {
+      background: #ddd;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 600px) {
+      .letter-box {
+        width: 2.8rem;
+        height: 2.8rem;
+      }
+      .letter-box input {
+        font-size: 2rem;
+      }
+      #keyboard button {
+        min-width: 2rem;
+        padding: 0.35rem 0.25rem;
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Anagram Task</h1>
+  <div class="container">
+    <h1>Scramble Task</h1>
 
-  <div id="scramble"></div>
-  <div id="instructions">
-    Type your guess in the row of boxes and press Enter to submit. Work as quickly and accurately as you can.
-  </div>
+    <div id="instructions">
+    <p>Below you'll see a series of scrambled words that need to be rearranged into a single five letter English word. There is only one correct solution per scramble, but some of these scrambles might have no correct answers. 
+    <p>You'll have to make at least one incorrect guess before a skip button will appear ont he screen. You should only use the Skip button if you are sure that the scramble cannot be solved.
+    <p><b>Instructions:</b> Type your guess in the boxes below and then press enter. Work as quickly and accurately as you can.</p>
+    </div>
 
-  <div id="board"></div>
-  <div id="message"></div>
+    <div id="scramble-row">
+      <div id="scramble">Unscramble: ?????</div>
+      <div id="timer">Time: 0s</div>
+    </div>
 
-  <div id="controls">
-    <button id="skipBtn">Skip this anagram</button>
-    <div id="timer"></div>
+    <div id="board"></div>
+
+    <div id="message"></div>
+
+    <div id="controls">
+      <button id="skipBtn">Skip: I cannot solve this scramble.</button>
+    </div>
+
+    <!-- On-screen keyboard -->
+    <div id="keyboard">
+      <div class="kb-row">
+        <button data-key="Q">Q</button>
+        <button data-key="W">W</button>
+        <button data-key="E">E</button>
+        <button data-key="R">R</button>
+        <button data-key="T">T</button>
+        <button data-key="Y">Y</button>
+        <button data-key="U">U</button>
+        <button data-key="I">I</button>
+        <button data-key="O">O</button>
+        <button data-key="P">P</button>
+      </div>
+      <div class="kb-row">
+        <button data-key="A">A</button>
+        <button data-key="S">S</button>
+        <button data-key="D">D</button>
+        <button data-key="F">F</button>
+        <button data-key="G">G</button>
+        <button data-key="H">H</button>
+        <button data-key="J">J</button>
+        <button data-key="K">K</button>
+        <button data-key="L">L</button>
+      </div>
+      <div class="kb-row">
+        <button data-key="BACKSPACE">⌫</button>
+        <button data-key="Z">Z</button>
+        <button data-key="X">X</button>
+        <button data-key="C">C</button>
+        <button data-key="V">V</button>
+        <button data-key="B">B</button>
+        <button data-key="N">N</button>
+        <button data-key="M">M</button>
+        <button data-key="ENTER">Enter</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

@@ -3,9 +3,7 @@
 // 1) Configuration
 const LETTERS_PER_WORD = 5;
 const SKIP_DELAY_MS = 3000; // 3 seconds before Skip appears after first attempt
-
-// Set to 15 minutes for real use; keep 1 minute for quick testing if you like
-const TOTAL_TASK_MS = 15 * 60 * 1000; // 1 minute for testing
+const TOTAL_TASK_MS = 15 * 60 * 1000; // 15 minute task timer
 
 // 2) Stimuli (pasted from your CSVs via converter)
 const STIMULI = {
@@ -212,7 +210,6 @@ const STIMULI = {
   { itemId: 200, scramble: "WONDU", solution: "WOUND", difficulty: "Easy", isUnsolvable: false },
   { itemId: 201, scramble: "WERCK", solution: "WRECK", difficulty: "Easy", isUnsolvable: false },
   { itemId: 202, scramble: "YOTHU", solution: "YOUTH", difficulty: "Easy", isUnsolvable: false },
-
   ],
   Moderate: [
 { itemId: 1, scramble: "YOANG", solution: "AGONY", difficulty: "Moderate", isUnsolvable: false },
@@ -919,13 +916,12 @@ const STIMULI = {
 };
 
 // 3) Condition from URL and ITEMS array
-
 const urlParams = new URLSearchParams(window.location.search);
 const condition = urlParams.get("cond") || "Easy";
 
-// Fisher–Yates shuffle (in-place)
+// Fisher–Yates shuffle (returns a new array)
 function shuffleArray(arr) {
-  const a = arr.slice(); // work on a copy, keep STIMULI unchanged
+  const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
@@ -933,7 +929,6 @@ function shuffleArray(arr) {
   return a;
 }
 
-// Build baseList depending on condition
 let baseList;
 
 if (condition === "MixedFutility") {
@@ -941,8 +936,7 @@ if (condition === "MixedFutility") {
   const solvable = all.filter(stim => !stim.isUnsolvable);
   const unsolvable = all.filter(stim => stim.isUnsolvable);
 
-  // Target mix: 75% solvable, 25% unsolvable (approx)
-  const totalTarget = all.length; // 292 in your design
+  const totalTarget = all.length;
   const targetUnsolvable = Math.round(totalTarget * 0.25);
   const targetSolvable = totalTarget - targetUnsolvable;
 
@@ -951,18 +945,15 @@ if (condition === "MixedFutility") {
 
   baseList = shuffleArray(chosenSolvable.concat(chosenUnsolvable));
 } else {
-  // Easy / Moderate / Hard: just shuffle the full list
   const pool = STIMULI[condition] || STIMULI["Easy"];
   baseList = shuffleArray(pool);
 }
 
-// Add trialIndex and condition to each stimulus
 const ITEMS = baseList.map((stim, idx) => ({
   trialIndex: idx,
   condition: condition,
   ...stim,
 }));
-
 
 // 4) Global state
 let trials = [];
@@ -974,7 +965,6 @@ let firstAttemptMs = null;
 let finishedCurrentItem = false;
 let skipTimerId = null;
 
-// Global task timer state
 let globalTaskTimeoutId = null;
 let taskEndedByTime = false;
 
@@ -987,6 +977,7 @@ const boardDiv = document.getElementById("board");
 const messageDiv = document.getElementById("message");
 const skipBtn = document.getElementById("skipBtn");
 const timerDiv = document.getElementById("timer");
+const keyboardDiv = document.getElementById("keyboard");
 
 // 6) Helper to get current item
 function getCurrentItem() {
@@ -1030,6 +1021,7 @@ function createAttemptRow(readonly, letters) {
       input.type = "text";
       input.maxLength = 1;
       input.autocomplete = "off";
+      input.setAttribute("enterkeyhint", "done");
 
       input.addEventListener("keydown", (e) => {
         if (finishedCurrentItem || taskEndedByTime) return;
@@ -1206,7 +1198,7 @@ function handleSubmitAttempt() {
     finishCurrentItem({ response: guess, correct: true, skipped: false });
   } else {
     messageDiv.textContent =
-      "That is not correct. Try again or use Skip if you cannot solve this one.";
+      "Try again or use the 'Skip' button if you think that you cannot solve this one.";
     addNewAttemptRow();
   }
 }
@@ -1262,7 +1254,52 @@ function endTaskDueToTime() {
   sendTaskDataToParent("time_limit");
 }
 
-// 18) Start the first item and the global task timer
+// 18) On-screen keyboard handler
+if (keyboardDiv) {
+  keyboardDiv.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-key]");
+    if (!btn || finishedCurrentItem || taskEndedByTime) return;
+
+    const key = btn.getAttribute("data-key");
+
+    if (key === "ENTER") {
+      handleSubmitAttempt();
+    } else if (key === "BACKSPACE") {
+      if (!currentRowInputs || currentRowInputs.length === 0) return;
+      let idx = currentRowInputs.findIndex(inp => document.activeElement === inp);
+      if (idx === -1) idx = currentRowInputs.length - 1;
+
+      if (idx >= 0) {
+        if (currentRowInputs[idx].value) {
+          currentRowInputs[idx].value = "";
+        } else if (idx > 0) {
+          currentRowInputs[idx - 1].value = "";
+          currentRowInputs[idx - 1].focus();
+        }
+      }
+    } else {
+      // letter key
+      const letter = key.toUpperCase();
+      if (!currentRowInputs || currentRowInputs.length === 0) return;
+
+      let idx = currentRowInputs.findIndex(inp => document.activeElement === inp);
+      if (idx === -1) {
+        // focus first empty box, or 0 if all filled
+        idx = currentRowInputs.findIndex(inp => !inp.value);
+        if (idx === -1) idx = 0;
+      }
+
+      if (idx >= 0 && idx < currentRowInputs.length) {
+        currentRowInputs[idx].value = letter;
+        if (idx < currentRowInputs.length - 1) {
+          currentRowInputs[idx + 1].focus();
+        }
+      }
+    }
+  });
+}
+
+// 19) Start the first item and the global task timer
 startCurrentItem();
 startGlobalTaskTimer();
 
