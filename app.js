@@ -5,7 +5,7 @@ const LETTERS_PER_WORD = 5;
 const SKIP_DELAY_MS = 3000; // 3 seconds before Skip appears after first attempt
 
 // Set to 15 minutes for real use; keep 1 minute for quick testing if you like
-const TOTAL_TASK_MS = 1 * 60 * 1000; // 1 minute for testing
+const TOTAL_TASK_MS = 15 * 60 * 1000; // 1 minute for testing
 
 // 2) Stimuli (pasted from your CSVs via converter)
 const STIMULI = {
@@ -1265,3 +1265,4 @@ function endTaskDueToTime() {
 // 18) Start the first item and the global task timer
 startCurrentItem();
 startGlobalTaskTimer();
+
