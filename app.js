@@ -1,11 +1,9 @@
-// Wordle-style anagram task: multiple items, multiple attempts, skip, global time limit
-
 // 1) Configuration
 const LETTERS_PER_WORD = 5;
 const SKIP_DELAY_MS = 3000; // 3 seconds before Skip appears after first attempt
 const TOTAL_TASK_MS = 15 * 60 * 1000; // 15 minute task timer
 
-// 2) Stimuli (pasted from your CSVs via converter)
+// 2) Stimuli
 const STIMULI = {
   Easy: [
   { itemId: 1, scramble: "AYONG", solution: "AGONY", difficulty: "Easy", isUnsolvable: false },
@@ -984,7 +982,7 @@ function getCurrentItem() {
   return ITEMS[currentItemIndex];
 }
 
-// 7) Helper to send data to Qualtrics (or any parent frame) safely
+// 7) Helper to send data to Qualtrics
 function sendTaskDataToParent(reason) {
   const payload = {
     type: "ScrambleTaskComplete",
