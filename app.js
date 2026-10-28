@@ -1,7 +1,7 @@
 // 1) Configuration
 const LETTERS_PER_WORD = 5;
 const SKIP_DELAY_MS = 3000; // 3 seconds before Skip appears after first attempt
-const TOTAL_TASK_MS = 15 * 60 * 1000; // 15 minute task timer
+const TOTAL_TASK_MS = 2 * 60 * 1000; // 10 minute task timer = 10 * 60 * 1000 | Temporarily set to 2 minutes for testing purposes.
 const HARD_SET_SIZE = 200; // Number of items in each randomized Hard set
 const HARD_UNSOLVABLE_PROPORTION = 0.25; // Proportion of each Hard set that is unsolvable
 
